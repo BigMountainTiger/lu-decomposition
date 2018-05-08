@@ -1,0 +1,43 @@
+body {
+	font-family: calibri;
+}
+
+.semi-bold {
+	font-weight: 600;
+}
+
+.btn {
+	border-radius: 3px;
+	margin-right: 4px;
+}
+
+.y-center {
+	display: flex;
+	align-items: center;
+}
+
+.matrix {
+	position: relative;
+	display: inline-block;
+	padding: 0px;
+	margin: 2px;
+}
+
+.matrix td {
+    padding: 4px 10px;
+}
+
+.matrix:before, .matrix:after {
+    content: "";
+    position: absolute;
+    top: 1px; bottom: 1px; width: 6px;
+    border: 1px solid;
+}
+.matrix:before {
+    left: 0px;
+    border-right: 0;
+}
+.matrix:after {
+    right: 0px;
+    border-left: 0;
+}

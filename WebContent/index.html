@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>lu-decomposition-example</title>
+<link rel="stylesheet" type="text/css" href="styles/app.css">
+
+<script type="text/javascript" src="script/MatrixUtil.js"></script>
+<script type="text/javascript" src="script/lu-decomposition.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+
+<script type="text/javascript">
+	// The example equition AX = B
+	let A = function() {
+		let A = [];
+		A.push([2,1,1,0]);
+		A.push([4,3,3,1]);
+		A.push([8,7,9,5]);
+		A.push([6,7,9,8]);
+		
+		return A;
+	}();
+	
+	let B = function() {
+		return [[5], [8], [1], [7]];		
+	}();
+	
+	// Matrix DOM
+	let React_Matrix = React.createClass({
+		render: function() {
+			let M = MatrixUtil.Round(this.props.M, 2);
+			
+			return React.DOM.table({className: 'matrix bb'},
+				M.map(function(row, i) {
+					return (React.DOM.tr({key: i},
+						row.map(function(e, j) {
+							let p = {key: j};
+							let s = {style: {'padding-right': '1px',
+								visibility: (e < 0)? 'visible' : 'hidden'}};
+							
+							return React.DOM.td(p,
+									React.DOM.span(s, '-'),
+									React.DOM.span(null, Math.abs(e)));
+						})
+					));
+				})
+			);
+		}
+	});
+	
+	let React_Main = React.createClass({
+		getInitialState: function() {
+			let lu = new LU().SetA(A);
+
+	        return { lu: lu, A: lu.A, B: B, P: lu.P, L: lu.L, U: lu.U };
+	    },
+	    LUandSolve: function() {
+	    	let state = this.state;
+	    	let lu = this.state.lu;
+	    	lu.PLU();
+			
+	    	let X = lu.Solve(state.B);
+	    	
+	    	let R = MatrixUtil.Subtract(B, MatrixUtil.Multiply(state.A, X));
+	    	let RT = MatrixUtil.Transpose(R);
+	    	let Residual = MatrixUtil.Multiply(RT, R)[0][0];
+	    	this.setState({ P: lu.P, L: lu.L, U: lu.U, X: X, Residual:  Residual});
+	    },
+	    Reset: function() {
+	    	let lu = this.state.lu;
+	    	lu.SetA(A);
+
+	    	this.setState({ P: lu.P, L: lu.L, U: lu.U, X: null, Residual: null });
+	    },
+		render: function() {
+			let state = this.state;
+			
+			let e = [];
+			e.push(React.DOM.div(null,
+					React.DOM.button({ onClick: this.LUandSolve, className: 'btn' }, 'LU & Solve Equition'),
+					React.DOM.button({ onClick: this.Reset, className: 'btn' }, 'Reset')));
+			
+			let X = state.X;
+			let Residual = state.Residual;
+			
+			e.push(React.DOM.div({className: 'y-center'},
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'A'),
+							React.createElement(React_Matrix, {M: state.A})),
+							
+					(X != null)? React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'X'),
+							React.createElement(React_Matrix, {M: state.X}))
+							: React.DOM.span({className: 'semi-bold',
+								style: {padding: '0px 5px'}}, 'X'),
+					
+					React.DOM.span({style: {padding: '0px 5px'}}, '='),
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'B'),
+							React.createElement(React_Matrix, {M: state.B}))));
+			
+			e.push(React.DOM.div(null, (Residual == null)? null
+					:React.DOM.span({style: {padding: '0px 5px'}}, 'Residual = ' + Residual)
+			));
+			
+			e.push(React.DOM.div({className: 'y-center'},
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'P'),
+						React.createElement(React_Matrix, {M: state.P})),
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'A'),
+						React.createElement(React_Matrix, {M: state.A})),
+					React.DOM.span({style: {padding: '0px 5px'}}, '='),
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'L'),
+						React.createElement(React_Matrix, {M: state.L})),
+					React.DOM.div(null, React.DOM.div({className: 'semi-bold'}, 'U'),
+						React.createElement(React_Matrix, {M: state.U}))));
+
+			
+			return React.DOM.div(null, e);
+		}
+	});
+	
+	
+		
+	window.onload = function() {
+	    ReactDOM.render(React.createElement(React_Main),
+	    		document.getElementById('example'));
+	};
+	
+</script>
+</head>
+<body>
+
+<div id="example"></div>
+
+</body>
+</html>
